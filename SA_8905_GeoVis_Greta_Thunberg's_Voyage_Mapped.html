@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>Greta Thunberg's Voyage, Mapped | SA8905, Ryerson University</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+
+    <!-- Mapbox GL JS -->
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />
+
+
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+    </style>
+</head>
+<body>
+
+<style>
+
+
+	#title {
+		height: auto;
+		width: 435px;
+		margin: 25px;
+		border-style: solid;
+		border-width: 10px;
+		border-color: #4CAF50;
+		border-radius: 10px;
+		padding-left: 15px;
+		padding-right: 15px;
+		padding-bottom: 15px;
+	  opacity: 0.99;
+	  font-size: 15px;
+	  font-family: Trebuchet MS;
+	  background-color: #fafafa;
+    z-index:-1;
+	}
+
+
+	/*Button Styling*/
+    #fly {
+        display: inline-block;
+        margin-left: 247px;
+        height: 40px;
+        padding: 10px;
+        border: none;
+        border-radius: 3px;
+        font-size: 15px;
+       	font-family: Trebuchet MS;
+        text-align: center;
+    }
+
+    #flyback {
+        display: inline-block;
+        height: 40px;
+        padding: 10px;
+        border: none;
+        border-radius: 3px;
+        font-size: 15px;
+       	font-family: Trebuchet MS;
+        text-align: center;
+    }
+
+
+    .button {
+  		-webkit-transition-duration: 0.4s;
+  		transition-duration: 0.4s;
+  		background-color: #4CAF50; /* Green */
+  		color: white;
+  		cursor: pointer;
+	}
+
+	.button:hover {
+  		background-color: #99d8c9; /* Green */
+  		color: black;
+  		cursor: pointer;
+	}
+
+
+    /*Pop-Up and Marker Styling*/
+    .mapboxgl-popup {
+		width: auto;
+		font: 15px Trebuchet MS;
+    z-index:1;
+	}
+	.mapboxgl-popup-content {
+		width:400px;
+		border-style: solid;
+		border-width: 10px;
+		border-color: #108B87;
+		border-radius: 10px;
+		font: 15px Trebuchet MS;
+    z-index:1;
+	}
+	.marker {
+  		background-image: url('https://bonnicilawgroup.com/wp-content/uploads/2015/08/map-marker-icon.png');
+  		background-size: cover;
+  		width: 50px;
+  		height: 50px;
+  		cursor: pointer;
+      z-index:0;
+	}
+
+
+</style>
+
+
+
+<!-- Create Div for Map -->
+<div id='map'></div>
+
+
+<!-- Title Textbox -->
+<div id='title'>
+	<h1>Greta Thunberg's Voyage, Mapped</h1>
+	<p>This map displays the journey of <a href="https://en.wikipedia.org/wiki/Greta_Thunberg" target="_blank">climate change activist Greta Thunberg.</a> Starting from her hometown of Stockholm, Sweden, the map takes you to each major destination that Greta has visited in her mission to promote international climate change 
+	action.</p>
+	<p>Use the buttons to move forward or back between these destinations, and click on the teal marker icons to display pop-ups with additional information!</p>
+	<button id='flyback' class='button'>Go Back</button>
+	<button id='fly' class='button'>Go Forward</button>
+
+</div>
+
+
+<!-- Initialize Scripts -->
+<script>
+mapboxgl.accessToken = 'pk.eyJ1IjoiczVwYXJpa2giLCJhIjoiY2ptZTY2MGxkNmdhNzNwcDR6NXN4a2tmbCJ9.d34YHT-88r1BfCJah_2KRg';
+
+//Add Map Layer
+var map = new mapboxgl.Map({
+container: 'map',
+style: 'mapbox://styles/mapbox/streets-v11',
+// Starting Point is Stockholm, Sweden
+center: [18.063240, 59.334591],
+zoom: 12,
+pitch: 45
+});
+
+
+
+//Scale Bar and Map Controls
+var scale = new mapboxgl.ScaleControl({
+    maxWidth: 100,
+    unit: 'metric'
+});
+map.addControl(scale);
+map.addControl(new mapboxgl.NavigationControl());
+scale.setUnit('metric');
+
+
+
+//This variable will track your current coordinate array's index.
+var idx = 0;
+
+//Array of Coordinates
+var arrayOfCoordinates = [
+
+//Stockholm
+[18.063240, 59.334591],
+//Plymouth
+[-4.143841, 50.376289],
+//New York
+[-73.970817, 40.575888],
+//Washington, D.C.
+[-77.03637, 38.89511],
+//New York UN HQ
+[-73.968056, 40.749444],
+//Montreal
+[-73.561668, 45.508888],
+//Edmonton
+[-113.490112, 53.545883],
+//Fort McMurray
+[-111.375961, 56.732014],
+//Vancouver
+[-123.116226, 49.246292],
+//Santiago
+[-70.64534, -33.459229],
+//Hampton
+[-76.360123, 37.034946],
+];
+
+
+
+
+//Pop-Ups and Icons
+map.on('load', function () {
+// Symbols Layer with Pop-Ups
+map.addLayer({
+"id": "places",
+"type": "symbol",
+"source": {
+"type": "geojson",
+"data": {
+"type": "FeatureCollection",
+"features": [{
+
+//Stockholm
+"type": "Feature",
+"properties": {
+"description": "<h3>January 3, 2003:</h3><p>Greta Thunberg is born in Stockholm on this day.<br><br>After becoming internationally recognized for organizing <a href='https://en.wikipedia.org/wiki/School_strike_for_the_climate' target='_blank'>school climate strikes</a> in 2018, she received invites to both the 2019 United Nations Climate Action Summit in New York and the 2019 United Nations Climate Change Conference in Santiago.<br><br>Thunberg then took a year off from high school and planned a carbon neutral transatlantic voyage from Europe to North America.</p>",
+"icon": "marker"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [18.063240, 59.334591]
+}
+},
+
+//Stockholm
+{
+"type": "Feature",
+"properties": {
+"description": "<h3>January 3, 2003:</h3><p>Greta Thunberg is born in Stockholm on this day.<br><br>After becoming internationally recognized for organizing <a href='https://en.wikipedia.org/wiki/School_strike_for_the_climate' target='_blank'>school climate strikes</a> in 2018, she received invites to both the 2019 United Nations Climate Action Summit in New York and the 2019 United Nations Climate Change Conference in Santiago.<br><br>Thunberg then took a year off from high school and planned a carbon neutral transatlantic voyage from Europe to North America.</p>",
+"icon": "marker"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [18.063240, 59.334591]
+}
+},
+
+//Plymouth
+{
+"type": "Feature",
+"properties": {
+"description": "<h3>August 14, 2019:</h3><p>Greta departs from Plymouth, England, on her voyage across the Atlantic. She sets sail on the Malizia II, a racing yacht with underwater turbines.</p>",
+"icon": "marker"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [-4.143841, 50.376289]
+}
+},
+
+//New York
+{
+"type": "Feature",
+"properties": {
+"description": "<h3>August 28, 2019:</h3><p>Greta arrives in New York to complete her 14-day transatlantic voyage by boat. The Malizia II docks on Coney Island.</p>",
+"icon": "marker"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [-73.970817, 40.575888]
+}
+},
+
+//Washington D.C.
+{
+"type": "Feature",
+"properties": {
+"description": "<h3>September 18, 2019:</h3><p>Greta visits with past president Barack Obama and later speaks before the House Foreign Affairs Committee and the House Select Committee in Washington D.C.</p>",
+"icon": "marker"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [-77.03637, 38.89511]
+}
+},
+
+//New York UN HQ
+{
+"type": "Feature",
+"properties": {
+"description": "<h3>September 20, 2019:</h3><p>Greta attends the United Nations Climate Action Summit in New York. Speaking before leaders, lawmakers and U.N. Secretary-General Antonio Guterres, Thunberg lambasts them with one of her most indignant speeches.</p>",
+"icon": "marker"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [-73.968056, 40.749444]
+}
+},
+
+//Montreal
+{
+"type": "Feature",
+"properties": {
+"description": "<h3>September 27, 2019:</h3><p>Greta attends and speaks at the Montreal Climate March, a protest on climate change. Similar marches and strikes take place globally on the same day.</p>",
+"icon": "marker"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [-73.561668, 45.508888]
+}
+},
+
+//Edmonton
+{
+"type": "Feature",
+"properties": {
+"description": "<h3>October 18, 2019:</h3><p>Greta marches and speaks in a climate strike in Edmonton.</p>",
+"icon": "marker"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [-113.490112, 53.545883]
+}
+},
+
+//Fort McMurray
+{
+"type": "Feature",
+"properties": {
+"description": "<h3>October 18, 2019:</h3><p>Following her speech in Edmonton, Greta travels to Fort McMurray. The climate activist privately meets with Athabasca Chipewyan First Nation Chief Allan Adam.</p>",
+"icon": "marker"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [-111.375961, 56.732014]
+}
+},
+
+//Vancouver
+{
+"type": "Feature",
+"properties": {
+"description": "<h3>October 24, 2019:</h3><p>Greta addresses thousands of demonstrators at a rally in downtown Vancouver, an event billed as a post-election push for Canadian leaders to take action on the climate crisis. She then returns back to the United States to prepare for COP25 in Santiago, Chile.</p>",
+"icon": "marker"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [-123.116226, 49.246292]
+}
+},
+
+//Santiago
+{
+"type": "Feature",
+"properties": {
+"description": "<h3>October 24, 2019:</h3><p>Due to national protests, Chile pulls out of the COP25 Summit that Greta was slated to attend. The summit is now scheduled to occur in Spain in December.</p>",
+"icon": "marker"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [-70.645348, -33.459229]
+}
+},
+
+//Hampton
+{
+"type": "Feature",
+"properties": {
+"description": "<h3>November 13, 2019:</h3><p>Seemingly stranded in the United States, Greta reaches out to her network for help in getting back to Europe. Famous YouTube travel couple Riley Whitelum and Elayna Carausu, better known as <a href='https://www.youtube.com/channel/UCZdQjaSoLjIzFnWsDQOv4ww/featured' target='_blank'>Sailing La Vagabonde</a>, offer to help, and the group set sail from Hampton, Virginia. Their voyage can be tracked in real time on <a href='https://sailing-lavagabonde.com/' target='_blank'>their website.</a><br><br>Thanks for joining Greta's voyage so far!</p>",
+"icon": "marker"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [-76.360123, 37.034946]
+}
+}]
+}
+},
+"layout": {
+"icon-image": "{icon}-15",
+"icon-allow-overlap": true
+}
+});
+ 
+
+
+
+
+
+var placeIcons = {
+  type: 'FeatureCollection',
+  features: [
+
+  //Stockholm
+  {
+    type: 'Feature',
+    geometry: {
+      type: 'Point',
+      coordinates: [18.063240, 59.334591]
+    }
+  },
+
+  //Plymouth
+  {
+    type: 'Feature',
+    geometry: {
+      type: 'Point',
+      coordinates: [-4.143841, 50.376289]
+    }
+   },
+
+
+   //New York
+   {
+    type: 'Feature',
+    geometry: {
+      type: 'Point',
+      coordinates: [-73.970817, 40.575888]
+    }
+  },
+
+  //Washington D.C.
+  {
+    type: 'Feature',
+    geometry: {
+      type: 'Point',
+      coordinates: [-77.03637, 38.89511]
+    }
+  },
+
+  //New York UN HQ
+  {
+    type: 'Feature',
+    geometry: {
+      type: 'Point',
+      coordinates: [-73.968056, 40.749444]
+    }
+  },
+
+  //Montreal
+  {
+    type: 'Feature',
+    geometry: {
+      type: 'Point',
+      coordinates: [-73.561668, 45.508888]
+    }
+  },
+
+  //Edmonton
+  {
+    type: 'Feature',
+    geometry: {
+      type: 'Point',
+      coordinates: [-113.490112, 53.545883]
+    }
+  },
+
+  //Fort McMurray
+  {
+    type: 'Feature',
+    geometry: {
+      type: 'Point',
+      coordinates: [-111.375961, 56.732014]
+    }
+  },
+
+  //Vancouver
+  {
+    type: 'Feature',
+    geometry: {
+      type: 'Point',
+      coordinates: [-123.116226, 49.246292]
+    }
+  },
+
+  //Santiago
+  {
+    type: 'Feature',
+    geometry: {
+      type: 'Point',
+      coordinates: [-70.64534, -33.459229]
+    }
+  },
+
+  //Hampton
+  {
+    type: 'Feature',
+    geometry: {
+      type: 'Point',
+      coordinates: [-76.360123, 37.034946]
+    }
+  }
+  ]
+};
+
+
+// add markers to map
+placeIcons.features.forEach(function(marker) {
+
+  // create a HTML element for each feature
+  var el = document.createElement('div');
+  el.className = 'marker';
+
+  // make a marker for each feature and add to the map
+  new mapboxgl.Marker(el)
+    .setLngLat(marker.geometry.coordinates)
+    .addTo(map);
+});
+
+
+
+
+// When a click event occurs on a feature in the places layer, open a popup at the
+// location of the feature, with description HTML from its properties.
+map.on('click', 'places', function (e) {
+var coordinates = e.features[0].geometry.coordinates.slice();
+var description = e.features[0].properties.description;
+ 
+// Ensure that if the map is zoomed out such that multiple
+// copies of the feature are visible, the popup appears
+// over the copy being pointed to.
+while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+}
+ 
+new mapboxgl.Popup()
+.setLngLat(coordinates)
+.setHTML(description)
+.addTo(map);
+});
+ 
+// Change the cursor to a pointer when the mouse is over the places layer.
+map.on('mouseenter', 'places', function () {
+map.getCanvas().style.cursor = 'pointer';
+});
+ 
+// Change it back to a pointer when it leaves.
+map.on('mouseleave', 'places', function () {
+map.getCanvas().style.cursor = '';
+});
+});
+
+
+
+
+
+//FlyTo Function Back
+document.getElementById('flyback').addEventListener('click', function () {
+    idx--;
+    map.flyTo({
+        center: arrayOfCoordinates[idx],
+        speed: 0.75,
+        zoom: 12,
+        pitch: 45
+    });
+    if (idx < 0) {
+        idx = 0;
+    }
+});
+
+
+//FlyTo Function
+document.getElementById('fly').addEventListener('click', function () {
+    idx++;
+    // Back to the first coordinate.
+    if (idx >= arrayOfCoordinates.length) {
+        idx = 0;
+    }
+    map.flyTo({
+        center: arrayOfCoordinates[idx],
+        speed: 0.75,
+        zoom: 12,
+        pitch: 45
+    });
+});
+
+
+
+
+</script>
+
+</body>
+</html>
